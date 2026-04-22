@@ -42,20 +42,20 @@ class cliente:
 
         self.telefono = telefono.strip()
 
-"""
-funciones para obtener datos de clientes
-"""
-def obtener_nombre(self):
-    return self.nombre
+    """
+    funciones para obtener datos de clientes
+    """
+    def obtener_nombre(self):
+     return self.nombre
 
-def obtener_email(self):
-    return self.email
+    def obtener_email(self):
+     return self.email
 
-def obtener_telefono(self):
-    return self.telefono
+    def obtener_telefono(self):
+     return self.telefono
 
-def descripcion_cliente(self):
-    return f"Nombre: {self.nombre}, Email: {self.email}, Teléfono: {self.telefono}"
+    def descripcion_cliente(self):
+     return f"Nombre: {self.nombre}, Email: {self.email}, Teléfono: {self.telefono}"
 
 
 
