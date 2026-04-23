@@ -1,6 +1,11 @@
-import errores
 from clientes import cliente
 from textos_aplicacion import RecursosTexto
+from errores import ErrorSistema
+from errores import ErrorValidacion
+from reserva import Reserva
+from servicios import Servicio
+from servicios import ServicioReservaSala
+
 
 
 """
@@ -25,9 +30,12 @@ class Aplicacion:
     es la aplicación por consola que integra las reservas de servicios, los clientes y las reservas
     """
 
-    def __init__(self):
+    def __init__(self,datos_iniciales = False):
         self._clientes: list[cliente] = []
+        self._reservas:list[Reserva] = []
+        self._servicios:list[Servicio] = []
         self._recursos_texto = RecursosTexto()
+        self._datos_iniciales = datos_iniciales
 
 
     def _pedir_opcion(self, mensaje="", opciones_validas=None, mensaje_error="Opción inválida"):
@@ -116,7 +124,82 @@ class Aplicacion:
                     crear reserva
                     """
 
-                    pass
+                    """
+                    si no tengo clientes ni servicios inscritos muestro un mensaje avisando. para crear una reserva
+                    debe existir al menor un servicio y un cliente que lo reserva
+                    """
+
+                    if not self._servicios or not self._clientes:
+                        print(self._recursos_texto.MENSAJE_LISTADO_CLIENTES_SERVICIOS_VACIO_CREAR_RESERVA)
+
+
+                    else:
+                        """
+                        si hay elementos entonces los listo para que el usuario elija
+                        """
+
+                        #indices que representan las opciones válidas al pedir dato por consola
+                        indices_permitidos = []
+
+                        print(self._recursos_texto.MENSAJE_SELECCION_CLIENTE)
+
+                        # listo clientes y pido que elija uno para asignarle un servicio
+                        for c in self._clientes:
+                            indice = self._clientes.index(c) + 1
+                            print(f"""{indice}. {c.descripcion_cliente()}""")
+                            indice_str = str(indice)
+                            indices_permitidos.append(indice_str)
+
+                        indice_cliente = self._pedir_opcion(
+                            opciones_validas=indices_permitidos,
+                            mensaje_error=self._recursos_texto.MENSAJE_ERROR_SELECCIONAR_CLIENTE,
+                            mensaje=self._recursos_texto.PEDIR_SELECCION_CLIENTE)
+
+
+                        """
+                        lo mismo con los servicios, las listo y pido al usuario que elija uno.
+                        """
+
+                        indices_permitidos = []
+
+
+                        print(self._recursos_texto.MENSAJE_SELECCION_SERVICIO)
+
+                        # listo servicios y pido la elección de uno para asignar a la reserva
+                        for s in self._servicios:
+                            indice = self._servicios.index(s) +1
+                            print(f"""{indice}. {s.describir_servicio()}""") # aquí listo una reserva
+                            indice_str = str(indice)
+                            indices_permitidos.append(indice_str)
+
+
+                        indice_servicio = self._pedir_opcion(
+                            opciones_validas= indices_permitidos,
+                            mensaje_error=RecursosTexto.MENSAJE_ERROR_SELECCION_SERVICIO,
+                            mensaje=self._recursos_texto.PEDIR_SELECCION_SERVICIO)
+
+
+
+                        try:
+                          """
+                          a este índice le resto 1 porque anteriormente lo sumé para mostrar valores de 1 en adelante por consola
+                          """
+                          indice_cliente  = int(indice_cliente) - 1
+                          indice_servicio= int(indice_servicio) -1
+
+                          reserva = Reserva(cliente=self._clientes[indice_cliente],servicio=self._servicios[indice_servicio])
+                          self._reservas.append(reserva)
+
+                          print(self._recursos_texto.MENSAJE_RESERVA_REGISTRADA)
+
+                        except ValueError as e:
+                            """
+                            este error nunca se lanza porque ya lo tengo previsto, de todas maneras atrapo la excepción.
+                            """
+                            registrar_log(f"""error en {self.__class__.__name__}:error al convertir un string a int""")
+                            continue
+
+
 
 
 
@@ -182,6 +265,4 @@ class Aplicacion:
 
 
 
-app = Aplicacion()
 
-app.iniciar()
