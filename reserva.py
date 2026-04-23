@@ -53,7 +53,7 @@ class Reserva:
             self._estado = "confirmada"
             registrar_log(
                 f"Reserva confirmada para {self._cliente.obtener_nombre()} - "
-                f"{self._servicio.describir_servicio()} - Costo: {self._costo}"
+                f"{self._servicio.descripcion_servicio()} - Costo: {self._costo}"
             )
 
 
