@@ -5,6 +5,8 @@ from errores import ErrorValidacion
 from reserva import Reserva
 from servicios import Servicio
 from servicios import ServicioReservaSala
+from servicios import ServicioAlquilerEquipo
+from servicios import ServicioAsesoria
 
 
 
@@ -67,11 +69,141 @@ class Aplicacion:
 
 
 
+    def _crear_servicio(self,tipo) -> Servicio:
+        """
+        método para crear un servicio por consola
+        tipo: subclase de servicio que representa el servicio que quieres crear. es la clase NO una instancia
+        retorna el servicio creado
+        """
+
+        servicio = None
+        while True:
+
+         try:
+
+             nombre_servicio = input(self._recursos_texto.PEDIR_NOMBRE_SERVICIO)
+
+             """
+             tipo ==  ServicioReservaSala
+             """
+             if tipo == ServicioReservaSala:
+                 horas_alquiler = int(input(self._recursos_texto.PEDIR_HORAS_RESERVA_SALA))
+
+
+                 servicio = ServicioReservaSala(nombre_servicio)
+
+                 mensaje_descuento = self._recursos_texto.obtener_mensaje_descuento_sala(servicio.calcular_costo(horas_alquiler))
+
+                 descuento = int(input(mensaje_descuento))
+                 costo = servicio.calcular_costo(horas_alquiler,descuento)
+
+                 if costo < 0:
+                     raise ErrorValidacion(f"""error en {self.__class__.__name__}:el valor del descuento no puede ser mayor al precio del servicio""")
+
+
+
+                 return servicio
+
+
+
+
+             elif tipo == ServicioAlquilerEquipo:
+              """
+               tipo == ServicioAlquilerEquipo:
+              """
+              tipo_equipo = input(self._recursos_texto.PEDIR_NOMBRE_EQUIPO_A_ALQUILAR)
+
+              if not tipo_equipo or not tipo_equipo.strip():
+                  raise ErrorValidacion(f"""error en {self.__class__.__name__}:el nombre del equipo a alquilar no pueda estar vacio""")
+
+              servicio = ServicioAlquilerEquipo(nombre_servicio,tipo_equipo)
+
+              cantidad_equipos = int(input(self._recursos_texto.PEDIR_CANTIDAD_EQUIPOS_A_ALQUILAR))
+
+              dias_alquiler = int(input(self._recursos_texto.PEDIR_CANTIDAD_DIAS_ALQUILER))
+
+
+              costo = servicio.calcular_costo(dias_alquiler,cantidad_equipos)
+
+              impuestos = int(input(self._recursos_texto.PEDIR_PORCENTAJE_IMPUESTOS))
+
+
+              servicio.calcular_costo(dias_alquiler,cantidad_equipos,impuestos=impuestos)
+              return servicio
+
+
+             elif tipo == ServicioAsesoria:
+                 """
+                 tipo == ServicioAsesoria
+                 """
+                 especialidad = input(self._recursos_texto.PEDIR_ESPECIALIDAD_ASESORIA)
+
+                 if not especialidad or not especialidad.strip():
+                  raise ErrorValidacion(f"""error en {self.__class__.__name__}:la especialidad del servicio de asesoría no puede estar vacio""")
+
+
+                 horas = int(input(self._recursos_texto.PEDIR_HORAS_ASESORIA))
+
+                 urgencia = self._pedir_opcion(
+                     opciones_validas=["s","n","S","N"],
+                     mensaje_error=self._recursos_texto.MENSAJE_ERROR_URGENCIA_SERVICIO_INVALIDA,
+                     mensaje=self._recursos_texto.PEDIR_URGENCIA_SERVICIO)
+
+                 urgencia = urgencia.lower() == "s"
+
+                 servicio = ServicioAsesoria(nombre_servicio,especialidad)
+
+                 servicio.calcular_costo(horas,urgencia)
+                 return servicio
+
+
+         except ErrorSistema as error:
+             registrar_log(error)
+             print(f"{error}")
+             continue
+
+
+         except ValueError as error:
+             registrar_log(f"Error en {self.__class__.__name__} al crear servicio : valores como el impuesto, días, cantidad deben ser numéricos.")
+             print("""\nError : debe ingresar valores numéricos válidos""")
+             continue
+
+
+
+
+    def _cargar_datos_iniciales(self):
+        """
+        carga datos iniciales en la aplicación. solo lo usa para pruebas
+        """
+        self._clientes.append(cliente("clienteUno", "cliente1@gmail.com", "1111111111"))
+        self._clientes.append(cliente("clienteDos", "cliente2@gmail.com", "2222222222"))
+        self._clientes.append(cliente("clienteTres", "cliente3@gmail.com", "3333333333"))
+        self._clientes.append(cliente("clienteCuatro", "cliente4@gmail.com", "4444444444"))
+        self._clientes.append(cliente("clienteCinco", "cliente5@gmail.com", "5555555555"))
+
+        servicio1 = ServicioAlquilerEquipo("alquiler de tecnología de última generación","Computador")
+        servicio1.calcular_costo(2,10)
+
+        servicio2 = ServicioAsesoria("servicio asesoría de software","crear sitio web")
+        servicio2.calcular_costo(2,urgencia=True)
+
+        servicio3 = ServicioReservaSala("reserva de instalaciones de recreación")
+        servicio3.calcular_costo(2,descuento=10000)
+
+        self._servicios.append(servicio1)
+        self._servicios.append(servicio2)
+        self._servicios.append(servicio3)
+
+
+
 
     def iniciar(self):
         """
         punto de incio de la aplicación
         """
+
+        if self._datos_iniciales:
+            self._cargar_datos_iniciales()
 
 
         while (True):
@@ -103,8 +235,42 @@ class Aplicacion:
                     crear servicio
                     """
 
+                    """
+                    usa el método que pide un dato hasta que se inserte una de las opciones válidas, en este caso ["1","2","3","4"]
+                    """
+                    tipo_servicio = self._pedir_opcion(
+                        opciones_validas=["1","2","3","4"],
+                        mensaje_error= self._recursos_texto.MENSAJE_ERROR_OPCION_SERVICIO_NO_VALIDA,
+                        mensaje= self._recursos_texto.MENSAJE_OPCIONES_SERVICIO)
 
-                    pass
+                    servicio = None
+
+                    """"
+                    dependiendo el número de teclado, creo un servicio de un tipo.
+                    la opción 4 es para volver al menú principal
+                    """
+
+                    match tipo_servicio:
+                        case "1":
+                            servicio = self._crear_servicio(ServicioReservaSala)
+
+                        case "2":
+                            servicio = self._crear_servicio(ServicioAlquilerEquipo)
+
+
+                        case "3":
+                            servicio = self._crear_servicio(ServicioAsesoria)
+
+                        case "4":
+                            continue
+
+                    #agrego el servicio a la lista
+                    self._servicios.append(servicio)
+
+                    print(self._recursos_texto.MENSAJE_SERVICIO_REGISTRADO)
+
+
+
 
 
 

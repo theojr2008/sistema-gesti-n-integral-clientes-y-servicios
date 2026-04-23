@@ -81,7 +81,7 @@ class ServicioReservaSala(Servicio):
             raise ErrorValidacion("El descuento debe ser un número no negativo. ")
 
         self._descuento = descuento
-        costo_base = self.obtener_horas_reservas() * self.precio
+        costo_base = self._horas_reserva * self.precio
         costo_final = max(0, costo_base - self._descuento)
         self._costo_calculado = costo_final
         return costo_final
@@ -111,8 +111,8 @@ class ServicioAlquilerEquipo(Servicio):
     Servicio de alquiler de equipos.
     """
 
-    def _init_(self, nombre, tipo_equipo, precio_por_dia=80000):
-        super()._init_(nombre, precio_por_dia)
+    def __init__(self, nombre, tipo_equipo, precio_por_dia=80000):
+        super().__init__(nombre, precio_por_dia)
         self._tipo_equipo = tipo_equipo
         self._dias = 0
         self._cantidad = 0
@@ -123,10 +123,10 @@ class ServicioAlquilerEquipo(Servicio):
         validar que días sea un número positivo y la cantidad de equipos a alquilar esté entre 1 y 100
         """
         if dias <= 0:
-            raise ErrorValidacion(f"error en {self._class.name_}: Los días deben ser mayores a 0")
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: Los días deben ser mayores a 0")
 
         if cantidad < 1 or cantidad > 100:
-            raise ErrorValidacion(f"error en {self._class.name_}: La cantidad debe estar entre 1 y 100")
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: La cantidad debe estar entre 1 y 100")
 
         self._dias = dias
         self._cantidad = cantidad
@@ -144,7 +144,7 @@ class ServicioAlquilerEquipo(Servicio):
             self.validar_parametros(dias, cantidad)
 
             if impuestos < 0 or impuestos > 100:
-                raise ErrorValidacion(f"error en {self._class.name_}: El impuesto debe estar entre 0 y 100")
+                raise ErrorValidacion(f"error en {self.__class__.__name__}: El impuesto debe estar entre 0 y 100")
 
             self._impuestos = impuestos
 
@@ -188,8 +188,8 @@ class ServicioAsesoria(Servicio):
     Servicio profesional de asesoría.
     """
 
-    def _init_(self, nombre, especialidad, tarifa_por_hora=60000):
-        super()._init_(nombre, tarifa_por_hora)
+    def __init__(self, nombre, especialidad, tarifa_por_hora=60000):
+        super().__init__(nombre, tarifa_por_hora)
         self._especialidad = especialidad
         self._horas = 0
         self._urgencia = False
@@ -199,7 +199,7 @@ class ServicioAsesoria(Servicio):
         valida que las horas de asesoría sea un número positivo
         """
         if horas <= 0:
-            raise ErrorValidacion(f"error en {self._class.name_}: Las horas deben ser mayores a 0")
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: Las horas deben ser mayores a 0")
 
         self._horas = horas
 
