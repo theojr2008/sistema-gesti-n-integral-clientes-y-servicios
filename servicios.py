@@ -48,7 +48,7 @@ class Servicio(ABC):
     @abstractmethod
     def descripcion_servicio(self):
         pass
-    
+
 
 
 
@@ -81,7 +81,7 @@ class ServicioReservaSala(Servicio):
             raise ErrorValidacion("El descuento debe ser un número no negativo. ")
 
         self._descuento = descuento
-        costo_base = self.obtener_horas_reservas() * self.precio
+        costo_base = self._horas_reserva * self.precio
         costo_final = max(0, costo_base - self._descuento)
         self._costo_calculado = costo_final
         return costo_final
@@ -104,3 +104,144 @@ class ServicioReservaSala(Servicio):
                    f"------------------------------------"
 
 
+
+
+class ServicioAlquilerEquipo(Servicio):
+    """
+    Servicio de alquiler de equipos.
+    """
+
+    def __init__(self, nombre, tipo_equipo, precio_por_dia=80000):
+        super().__init__(nombre, precio_por_dia)
+        self._tipo_equipo = tipo_equipo
+        self._dias = 0
+        self._cantidad = 0
+        self._impuestos = 0
+
+    def validar_parametros(self, dias, cantidad):
+        """
+        validar que días sea un número positivo y la cantidad de equipos a alquilar esté entre 1 y 100
+        """
+        if dias <= 0:
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: Los días deben ser mayores a 0")
+
+        if cantidad < 1 or cantidad > 100:
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: La cantidad debe estar entre 1 y 100")
+
+        self._dias = dias
+        self._cantidad = cantidad
+
+
+    def calcular_costo(self, dias, cantidad, impuestos=0):
+        """
+        calcula el costo de este servicio.
+        dias: dias de alquiler del equipo
+        cantidad: total de equipos de ese tipo
+        impuesto: número entre 0 y 100 que representa el porcentaje de impuestos
+        """
+        try:
+            self.validar_disponibilidad() #si no está disponible lanza una excepción
+            self.validar_parametros(dias, cantidad)
+
+            if impuestos < 0 or impuestos > 100:
+                raise ErrorValidacion(f"error en {self.__class__.__name__}: El impuesto debe estar entre 0 y 100")
+
+            self._impuestos = impuestos
+
+            costo = dias * cantidad * self.precio
+            costo += costo * (impuestos / 100) # sumo el impuesto
+
+            return costo
+
+        except Exception as e:
+            raise ErrorSistema("Error al calcular costo de alquiler") from e
+
+
+    """
+    métodos que devuelve string y se usan en la aplicación por consola para listar el servicio
+    """
+
+
+    def descripcion_servicio(self):
+        try:
+            costo = self.calcular_costo(self._dias, self._cantidad, self._impuestos)
+            return f"{self.nombre} | Equipo: {self._tipo_equipo} | Días: {self._dias} | Cantidad: {self._cantidad} | Costo: ${costo}"
+        except:
+            return f"{self.nombre} | Equipo: {self._tipo_equipo} | Servicio no procesado"
+
+    def obtener_dias_alquiler(self):
+        return self._dias
+
+    def obtener_cantidad(self):
+        return self._cantidad
+
+    def obtener_impuestos(self):
+        return self._impuestos
+
+
+
+
+
+
+class ServicioAsesoria(Servicio):
+    """
+    Servicio profesional de asesoría.
+    """
+
+    def __init__(self, nombre, especialidad, tarifa_por_hora=60000):
+        super().__init__(nombre, tarifa_por_hora)
+        self._especialidad = especialidad
+        self._horas = 0
+        self._urgencia = False
+
+    def validar_parametros(self, horas):
+        """
+        valida que las horas de asesoría sea un número positivo
+        """
+        if horas <= 0:
+            raise ErrorValidacion(f"error en {self.__class__.__name__}: Las horas deben ser mayores a 0")
+
+        self._horas = horas
+
+    def calcular_costo(self, horas, urgencia=False):
+        """
+        calcula el costo de la asesoria
+        horas: horas de asesoria
+
+        urgencia: True si es de urgencia. se simula un aumento del 20% del precio final en caso de que es un servicio
+        al que se le tiene que dar prioridad
+        """
+        try:
+            self.validar_disponibilidad()
+            self.validar_parametros(horas)
+
+            costo = horas * self.precio
+
+            if urgencia:
+                costo *= 1.2
+
+            self._urgencia = urgencia
+
+            return costo
+
+        except Exception as e:
+            raise ErrorSistema("Error al calcular costo de asesoría") from e
+
+
+
+    """
+    métodos para listar el servicio en la aplicación por consola
+    """
+
+    def descripcion_servicio(self):
+        try:
+            costo = self.calcular_costo(self._horas, self._urgencia)
+            return f"{self.nombre} | Especialidad: {self._especialidad} | Horas: {self._horas} | Costo: ${costo}"
+        except:
+            return f"{self.nombre} | Especialidad: {self._especialidad} | Servicio no procesado"
+
+    def obtener_horas(self):
+        return self._horas
+
+    def obtener_urgencia(self):
+        return self._urgencia

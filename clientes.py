@@ -5,7 +5,7 @@ clase maneja todos los clientes del sistema
 """
 class cliente:
     def __init__(self,nombre,email,telefono):
-        self.verifivar_nombre(nombre)
+        self.verificar_nombre(nombre)
         self.verificar_email(email)
         self.verificar_telefono(telefono)
     """
