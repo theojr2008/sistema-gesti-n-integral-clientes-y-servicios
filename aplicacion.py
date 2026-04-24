@@ -412,7 +412,45 @@ class Aplicacion:
                      """
                      habilitar servicio
                      """
-                     pass
+            
+                     print(self._recursos_texto.TITULO_HABILITAR_SERVICIO)
+
+                     if not self._servicios:
+                         print(self._recursos_texto.MENSAJE_LISTADO_SERVICIOS_VACIO)
+                         continue
+                     
+                     indices_permitidos = []
+                     print(self._recursos_texto.MENSAJE_SELECCION_SERVICIO) 
+                     for s in self._servicios:
+                         indice = self._servicios.index(s) + 1
+                         print(f"""{indice}. {s.descripcion_servicio()}""") 
+                         indice_str = str(indice)
+                         indices_permitidos.append(indice_str)
+
+                     try:
+                         opcion_servicio = self._pedir_opcion(
+                             opciones_validas=indices_permitidos,
+                             mensaje=self._recursos_texto.PEDIR_SERVICIO_A_HABILITAR,
+                             mensaje_error=self._recursos_texto.MENSAJE_ERROR_SELECCION_SERVICIO
+                         )
+
+                    
+                         indice_servicio = int(opcion_servicio) - 1
+                         servicio_a_habilitar = self._servicios[indice_servicio]
+                         servicio_a_habilitar.activar()
+                         print(self._recursos_texto.MENSAJE_SERVICIO_HABILITADO)
+
+                     except ValueError:
+                         """
+                         este error nunca se lanza porque ya lo tengo previsto, de todas maneras atrapo la excepción.
+                         """
+                         registrar_log(f"error en {self.__class__.__name__}: error al convertir un string a int al habilitar servicio")
+                         continue
+                     except Exception as e:
+                         registrar_log(f"error en {self.__class__.__name__}: {e}")
+                         print("Ocurrió un error inesperado al habilitar el servicio.")
+                         continue
+
 
 
 
@@ -423,7 +461,45 @@ class Aplicacion:
                     """
                     deshabilitar servicio
                     """
-                    pass
+        
+                    print(self._recursos_texto.TITULO_DESHABILITAR_SERVICIO)
+
+                    if not self._servicios:
+                        print(self._recursos_texto.MENSAJE_LISTADO_SERVICIOS_VACIO)
+                        continue
+                    indices_permitidos = []
+
+
+                    print(self._recursos_texto.MENSAJE_SELECCION_SERVICIO)
+                    for s in self._servicios:
+                        indice = self._servicios.index(s) + 1
+                        print(f"""{indice}. {s.descripcion_servicio()}""") 
+                        indice_str = str(indice)
+                        indices_permitidos.append(indice_str)
+
+                    try:
+                        opcion_servicio = self._pedir_opcion(
+                            opciones_validas=indices_permitidos,
+                            mensaje=self._recursos_texto.PEDIR_SERVICIO_A_DESHABILITAR,
+                            mensaje_error=self._recursos_texto.MENSAJE_ERROR_SELECCION_SERVICIO
+                        )
+
+                    
+                        indice_servicio = int(opcion_servicio) - 1
+                        servicio_a_deshabilitar = self._servicios[indice_servicio]
+                        servicio_a_deshabilitar.desactivar()
+                        print(self._recursos_texto.MENSAJE_SERVICIO_DESHABILITADO)
+
+                    except ValueError:
+                        """
+                        este error nunca se lanza porque ya lo tengo previsto, de todas maneras atrapo la excepción.
+                        """
+                        registrar_log(f"error en {self.__class__.__name__}: error al convertir un string a int al deshabilitar servicio")
+                        continue
+                    except Exception as e:
+                        registrar_log(f"error en {self.__class__.__name__}: {e}")
+                        print("Ocurrió un error inesperado al deshabilitar el servicio.")
+                        continue
 
 
                 case "11":
